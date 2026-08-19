@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NovaCHROM2 Report</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f5f6f8;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --muted: #666;
+    --border: #e2e4e8;
+    --accent: #3b5bdb;
+    --header-bg: #f0f2f7;
+    --code-bg: #f0f0f3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171a;
+      --card-bg: #1f2023;
+      --text: #eaeaea;
+      --muted: #9a9a9a;
+      --border: #33353a;
+      --accent: #7c93f7;
+      --header-bg: #26282d;
+      --code-bg: #2a2b2f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2rem 1rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 900px;
+  }
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+  }
+  .sub {
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    word-break: break-all;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+    vertical-align: top;
+  }
+  th {
+    background: var(--header-bg);
+    font-weight: 600;
+  }
+  tr:last-child td {
+    border-bottom: none;
+  }
+  td.key {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  td.value, td.key {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    word-break: break-word;
+  }
+  .empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--muted);
+  }
+  .copy-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .copy-btn:active {
+    opacity: 0.8;
+  }
+  .toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.5rem;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>NovaCHROM2 Report</h1>
+  <div class="sub" id="fullUrl"></div>
+
+  <div class="toolbar">
+    <button class="copy-btn" id="copyBtn" style="display:none;">Copy as JSON</button>
+  </div>
+
+  <div class="card">
+    <table id="paramTable">
+      <thead>
+        <tr><th>Key</th><th>Value</th></tr>
+      </thead>
+      <tbody id="paramBody"></tbody>
+    </table>
+    <div class="empty" id="emptyMsg" style="display:none;">No URL parameters found.</div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var params = new URLSearchParams(window.location.search);
+    var body = document.getElementById('paramBody');
+    var emptyMsg = document.getElementById('emptyMsg');
+    var table = document.getElementById('paramTable');
+    var copyBtn = document.getElementById('copyBtn');
+    var fullUrl = document.getElementById('fullUrl');
+
+    fullUrl.textContent = window.location.href;
+
+    var entries = Array.from(params.entries());
+
+    if (entries.length === 0) {
+      table.style.display = 'none';
+      emptyMsg.style.display = 'block';
+      return;
+    }
+
+    var data = {};
+    entries.forEach(function (pair) {
+      var key = pair[0];
+      var value = pair[1];
+      var row = document.createElement('tr');
+
+      var keyCell = document.createElement('td');
+      keyCell.className = 'key';
+      keyCell.textContent = key;
+
+      var valCell = document.createElement('td');
+      valCell.className = 'value';
+      valCell.textContent = value;
+
+      row.appendChild(keyCell);
+      row.appendChild(valCell);
+      body.appendChild(row);
+
+      if (Object.prototype.hasOwnProperty.call(data, key)) {
+        if (Array.isArray(data[key])) {
+          data[key].push(value);
+        } else {
+          data[key] = [data[key], value];
+        }
+      } else {
+        data[key] = value;
+      }
+    });
+
+    copyBtn.style.display = 'inline-block';
+    copyBtn.addEventListener('click', function () {
+      var json = JSON.stringify(data, null, 2);
+      navigator.clipboard.writeText(json).then(function () {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(function () { copyBtn.textContent = 'Copy as JSON'; }, 1500);
+      });
+    });
+  })();
+</script>
+</body>
+</html>
